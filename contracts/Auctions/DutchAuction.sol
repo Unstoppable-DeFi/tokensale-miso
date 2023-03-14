@@ -265,14 +265,17 @@ contract DutchAuction is IMisoMarket, MISOAccessControls, BoringBatchable, SafeT
     function revertBecauseUserDidNotProvideAgreement() internal pure {
         revert("No agreement provided, please review the smart contract before interacting with it");
     }
+    
 
+    event Committed(address indexed account, uint256 commitment, uint256 totalCommitments, string referralCodeUsed);
     /**
      * @notice Checks the amount of ETH to commit and adds the commitment. Refunds the buyer if commit is too high.
      * @param _beneficiary Auction participant ETH address.
      */
     function commitEth(
         address payable _beneficiary,
-        bool readAndAgreedToMarketParticipationAgreement
+        bool readAndAgreedToMarketParticipationAgreement,
+        string calldata _referralCode
     )
         public payable
     {
@@ -295,6 +298,8 @@ contract DutchAuction is IMisoMarket, MISOAccessControls, BoringBatchable, SafeT
 
         /// @notice Revert if commitmentsTotal exceeds the balance
         require(marketStatus.commitmentsTotal <= address(this).balance, "DutchAuction: The committed ETH exceeds the balance");
+
+        emit Committed(_beneficiary, ethToTransfer, marketStatus.commitmentsTotal, _referralCode);
     }
 
     /**
