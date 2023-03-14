@@ -265,9 +265,9 @@ contract DutchAuction is IMisoMarket, MISOAccessControls, BoringBatchable, SafeT
     function revertBecauseUserDidNotProvideAgreement() internal pure {
         revert("No agreement provided, please review the smart contract before interacting with it");
     }
+    
 
-
-    event Committed(address indexed account, uint256 committment, uint256 totalCommitments, string referralCodeUsed);
+    event Committed(address indexed account, uint256 commitment, uint256 totalCommitments, string referralCodeUsed);
     /**
      * @notice Checks the amount of ETH to commit and adds the commitment. Refunds the buyer if commit is too high.
      * @param _beneficiary Auction participant ETH address.
