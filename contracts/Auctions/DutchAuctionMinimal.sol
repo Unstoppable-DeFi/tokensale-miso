@@ -117,6 +117,10 @@ contract DutchAuction is MISOAccessControls, SafeTransfer, ReentrancyGuard  {
     /// @notice Event for cancellation of the auction.
     event AuctionCancelled();
 
+    constructor() public {
+        initAccessControls(msg.sender);
+    }
+
     /**
      * @notice Initializes main contract variables and transfers funds for the auction.
      * @dev Init function.
@@ -141,6 +145,7 @@ contract DutchAuction is MISOAccessControls, SafeTransfer, ReentrancyGuard  {
         address _admin,
         address payable _wallet
     ) public {
+        require(hasAdminRole(msg.sender));
         require(_endTime < 10000000000, "DutchAuction: enter an unix timestamp in seconds, not miliseconds");
         require(_startTime >= block.timestamp, "DutchAuction: start time is before current time");
         require(_endTime > _startTime, "DutchAuction: end time must be older than start price");
@@ -161,8 +166,6 @@ contract DutchAuction is MISOAccessControls, SafeTransfer, ReentrancyGuard  {
         auctionToken = _token;
         paymentCurrency = ETH_ADDRESS;
         wallet = _wallet;
-
-        initAccessControls(_admin);
 
         _safeTransferFrom(_token, _funder, _totalTokens);
 
