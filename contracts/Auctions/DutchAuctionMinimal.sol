@@ -50,7 +50,7 @@ import "../Utils/BoringERC20.sol";
 /// @notice Attribution to delta.financial
 /// @notice Attribution to dutchswap.com
 
-contract DutchAuction is MISOAccessControls, SafeTransfer, ReentrancyGuard  {
+contract DutchAuctionMinimal is MISOAccessControls, SafeTransfer, ReentrancyGuard  {
     using BoringMath for uint256;
     using BoringMath128 for uint128;
     using BoringMath64 for uint64;
@@ -461,10 +461,13 @@ contract DutchAuction is MISOAccessControls, SafeTransfer, ReentrancyGuard  {
         emit AuctionFinalized();
     }
 
-
     /// @notice Withdraws bought tokens, or returns commitment if the sale is unsuccessful.
-    function withdrawTokens() public  {
-        withdrawTokens(msg.sender);
+    function withdraw() public {
+        _withdrawTokens(msg.sender);
+    }
+
+    function withdrawFor(address payable beneficiary) public {
+        _withdrawTokens(beneficiary);
     }
 
    /**
@@ -472,7 +475,7 @@ contract DutchAuction is MISOAccessControls, SafeTransfer, ReentrancyGuard  {
      * @dev Withdraw tokens only after auction ends.
      * @param beneficiary Whose tokens will be withdrawn.
      */
-    function withdrawTokens(address payable beneficiary) public   nonReentrant  {
+    function _withdrawTokens(address payable beneficiary) internal nonReentrant {
         if (auctionSuccessful()) {
             require(marketStatus.finalized, "DutchAuction: not finalized");
             /// @dev Successful auction! Transfer claimed tokens.
