@@ -434,11 +434,8 @@ contract DutchAuctionMinimal is MISOAccessControls, SafeTransfer, ReentrancyGuar
      * @notice Auction finishes successfully above the reserve.
      * @dev Transfer contract funds to initialized wallet.
      */
-    function finalize() public   nonReentrant  
-    {
-
+    function finalize() public nonReentrant {
         require(hasAdminRole(msg.sender) 
-                || hasSmartContractRole(msg.sender) 
                 || wallet == msg.sender
                 || finalizeTimeExpired(), "DutchAuction: sender must be an admin");
         
@@ -447,6 +444,20 @@ contract DutchAuctionMinimal is MISOAccessControls, SafeTransfer, ReentrancyGuar
         MarketStatus storage status = marketStatus;
 
         require(!status.finalized, "DutchAuction: auction already finalized");
+        
+        status.finalized = true;
+
+        emit AuctionFinalized();
+    }
+
+    /// @notice admin can claim proceeds of successful auction to seed liquidity
+    function adminClaim() public nonReentrant {
+        require(hasAdminRole(msg.sender) 
+                || wallet == msg.sender
+                || finalizeTimeExpired(), "DutchAuction: sender must be an admin");
+        
+        MarketStatus storage status = marketStatus;
+
         if (auctionSuccessful()) {
             /// @dev Successful auction
             /// @dev Transfer contributed tokens to wallet.
@@ -457,8 +468,7 @@ contract DutchAuctionMinimal is MISOAccessControls, SafeTransfer, ReentrancyGuar
             require(block.timestamp > uint256(marketInfo.endTime), "DutchAuction: auction has not finished yet"); 
             _safeTokenPayment(auctionToken, wallet, uint256(marketInfo.totalTokens));
         }
-        status.finalized = true;
-        emit AuctionFinalized();
+    
     }
 
     /// @notice Withdraws bought tokens, or returns commitment if the sale is unsuccessful.
