@@ -146,15 +146,15 @@ contract DutchAuctionMinimal is MISOAccessControls, SafeTransfer, ReentrancyGuar
         address payable _wallet
     ) public {
         require(hasAdminRole(msg.sender));
-        require(_endTime < 10000000000, "DutchAuction: enter an unix timestamp in seconds, not miliseconds");
-        require(_startTime >= block.timestamp, "DutchAuction: start time is before current time");
-        require(_endTime > _startTime, "DutchAuction: end time must be older than start price");
-        require(_totalTokens > 0,"DutchAuction: total tokens must be greater than zero");
-        require(_startPrice > _minimumPrice, "DutchAuction: start price must be higher than minimum price");
-        require(_minimumPrice > 0, "DutchAuction: minimum price must be greater than 0"); 
-        require(_admin != address(0), "DutchAuction: admin is the zero address");
-        require(_wallet != address(0), "DutchAuction: wallet is the zero address");
-        require(IERC20(_token).decimals() == 18, "DutchAuction: Token does not have 18 decimals");
+        require(_endTime < 10000000000, "enter an unix timestamp in seconds, not miliseconds");
+        require(_startTime >= block.timestamp, "start time is before current time");
+        require(_endTime > _startTime, "end time must be older than start price");
+        require(_totalTokens > 0,"total tokens must be greater than zero");
+        require(_startPrice > _minimumPrice, "start price must be higher than minimum price");
+        require(_minimumPrice > 0, "minimum price must be greater than 0"); 
+        require(_admin != address(0), "admin is the zero address");
+        require(_wallet != address(0), "wallet is the zero address");
+        require(IERC20(_token).decimals() == 18, "Token does not have 18 decimals");
 
         marketInfo.startTime = BoringMath.to64(_startTime);
         marketInfo.endTime = BoringMath.to64(_endTime);
@@ -265,7 +265,7 @@ contract DutchAuctionMinimal is MISOAccessControls, SafeTransfer, ReentrancyGuar
     )
         public payable
     {
-        require(paymentCurrency == ETH_ADDRESS, "DutchAuction: payment currency is not ETH address"); 
+        require(paymentCurrency == ETH_ADDRESS, "payment currency is not ETH address"); 
         if(readAndAgreedToMarketParticipationAgreement == false) {
             revertBecauseUserDidNotProvideAgreement();
         }
@@ -283,7 +283,7 @@ contract DutchAuctionMinimal is MISOAccessControls, SafeTransfer, ReentrancyGuar
         }
 
         /// @notice Revert if commitmentsTotal exceeds the balance
-        require(marketStatus.commitmentsTotal <= address(this).balance, "DutchAuction: The committed ETH exceeds the balance");
+        require(marketStatus.commitmentsTotal <= address(this).balance, "The committed ETH exceeds the balance");
 
         emit Committed(_beneficiary, ethToTransfer, marketStatus.commitmentsTotal, _referralCode);
     }
@@ -398,7 +398,7 @@ contract DutchAuctionMinimal is MISOAccessControls, SafeTransfer, ReentrancyGuar
      * @param _commitment The amount to commit.
      */
     function _addCommitment(address _addr, uint256 _commitment) internal {
-        require(block.timestamp >= uint256(marketInfo.startTime) && block.timestamp <= uint256(marketInfo.endTime), "DutchAuction: outside auction hours");
+        require(block.timestamp >= uint256(marketInfo.startTime) && block.timestamp <= uint256(marketInfo.endTime), "outside auction hours");
         MarketStatus storage status = marketStatus;
         
         uint256 newCommitment = commitments[_addr].add(_commitment);
@@ -422,8 +422,8 @@ contract DutchAuctionMinimal is MISOAccessControls, SafeTransfer, ReentrancyGuar
     {
         require(hasAdminRole(msg.sender));
         MarketStatus storage status = marketStatus;
-        require(!status.finalized, "DutchAuction: auction already finalized");
-        require( uint256(status.commitmentsTotal) == 0, "DutchAuction: auction already committed" );
+        require(!status.finalized, "auction already finalized");
+        require( uint256(status.commitmentsTotal) == 0, "auction already committed" );
         _safeTokenPayment(auctionToken, wallet, uint256(marketInfo.totalTokens));
         status.finalized = true;
         
@@ -437,13 +437,13 @@ contract DutchAuctionMinimal is MISOAccessControls, SafeTransfer, ReentrancyGuar
     function finalize() public nonReentrant {
         require(hasAdminRole(msg.sender) 
                 || wallet == msg.sender
-                || finalizeTimeExpired(), "DutchAuction: sender must be an admin");
+                || finalizeTimeExpired(), "sender must be an admin");
         
         require(marketInfo.totalTokens > 0, "Not initialized");
 
         MarketStatus storage status = marketStatus;
 
-        require(!status.finalized, "DutchAuction: auction already finalized");
+        require(!status.finalized, "auction already finalized");
         
         status.finalized = true;
 
@@ -454,7 +454,7 @@ contract DutchAuctionMinimal is MISOAccessControls, SafeTransfer, ReentrancyGuar
     function adminClaim() public nonReentrant {
         require(hasAdminRole(msg.sender) 
                 || wallet == msg.sender
-                || finalizeTimeExpired(), "DutchAuction: sender must be an admin");
+                || finalizeTimeExpired(), "sender must be an admin");
         
         MarketStatus storage status = marketStatus;
 
@@ -465,7 +465,7 @@ contract DutchAuctionMinimal is MISOAccessControls, SafeTransfer, ReentrancyGuar
         } else {
             /// @dev Failed auction
             /// @dev Return auction tokens back to wallet.
-            require(block.timestamp > uint256(marketInfo.endTime), "DutchAuction: auction has not finished yet"); 
+            require(block.timestamp > uint256(marketInfo.endTime), "auction has not finished yet"); 
             _safeTokenPayment(auctionToken, wallet, uint256(marketInfo.totalTokens));
         }
     
@@ -487,16 +487,16 @@ contract DutchAuctionMinimal is MISOAccessControls, SafeTransfer, ReentrancyGuar
      */
     function _withdrawTokens(address payable beneficiary) internal nonReentrant {
         if (auctionSuccessful()) {
-            require(marketStatus.finalized, "DutchAuction: not finalized");
+            require(marketStatus.finalized, "not finalized");
             /// @dev Successful auction! Transfer claimed tokens.
             uint256 tokensToClaim = tokensClaimable(beneficiary);
-            require(tokensToClaim > 0, "DutchAuction: No tokens to claim"); 
+            require(tokensToClaim > 0, "No tokens to claim"); 
             claimed[beneficiary] = claimed[beneficiary].add(tokensToClaim);
             _safeTokenPayment(auctionToken, beneficiary, tokensToClaim);
         } else {
             /// @dev Auction did not meet reserve price.
             /// @dev Return committed funds back to user.
-            require(block.timestamp > uint256(marketInfo.endTime), "DutchAuction: auction has not finished yet");
+            require(block.timestamp > uint256(marketInfo.endTime), "auction has not finished yet");
             uint256 fundsCommitted = commitments[beneficiary];
             commitments[beneficiary] = 0; // Stop multiple withdrawals and free some gas
             _safeTokenPayment(paymentCurrency, beneficiary, fundsCommitted);
