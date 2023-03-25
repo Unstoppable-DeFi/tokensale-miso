@@ -503,60 +503,6 @@ contract DutchAuctionMinimal is MISOAccessControls, SafeTransfer, ReentrancyGuar
         }
     }
 
-
-    //--------------------------------------------------------
-    // Setter Functions
-    //--------------------------------------------------------
-
-    /**
-     * @notice Admin can set start and end time through this function.
-     * @param _startTime Auction start time.
-     * @param _endTime Auction end time.
-     */
-    function setAuctionTime(uint256 _startTime, uint256 _endTime) external {
-        require(hasAdminRole(msg.sender));
-        require(_startTime < 10000000000, "DutchAuction: enter an unix timestamp in seconds, not miliseconds");
-        require(_endTime < 10000000000, "DutchAuction: enter an unix timestamp in seconds, not miliseconds");
-        require(_startTime >= block.timestamp, "DutchAuction: start time is before current time");
-        require(_endTime > _startTime, "DutchAuction: end time must be older than start time");
-        require(marketStatus.commitmentsTotal == 0, "DutchAuction: auction cannot have already started");
-
-        marketInfo.startTime = BoringMath.to64(_startTime);
-        marketInfo.endTime = BoringMath.to64(_endTime);
-        
-        emit AuctionTimeUpdated(_startTime,_endTime);
-    }
-
-    /**
-     * @notice Admin can set start and min price through this function.
-     * @param _startPrice Auction start price.
-     * @param _minimumPrice Auction minimum price.
-     */
-    function setAuctionPrice(uint256 _startPrice, uint256 _minimumPrice) external {
-        require(hasAdminRole(msg.sender));
-        require(_startPrice > _minimumPrice, "DutchAuction: start price must be higher than minimum price");
-        require(_minimumPrice > 0, "DutchAuction: minimum price must be greater than 0"); 
-        require(marketStatus.commitmentsTotal == 0, "DutchAuction: auction cannot have already started");
-
-        marketPrice.startPrice = BoringMath.to128(_startPrice);
-        marketPrice.minimumPrice = BoringMath.to128(_minimumPrice);
-
-        emit AuctionPriceUpdated(_startPrice,_minimumPrice);
-    }
-
-    /**
-     * @notice Admin can set the auction wallet through this function.
-     * @param _wallet Auction wallet is where funds will be sent.
-     */
-    function setAuctionWallet(address payable _wallet) external {
-        require(hasAdminRole(msg.sender));
-        require(_wallet != address(0), "DutchAuction: wallet is the zero address");
-
-        wallet = _wallet;
-
-        emit AuctionWalletUpdated(_wallet);
-    }
-
     function getTotalTokens() external view returns(uint256) {
         return uint256(marketInfo.totalTokens);
     }
