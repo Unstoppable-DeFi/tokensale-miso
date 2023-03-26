@@ -243,7 +243,7 @@ contract DutchAuctionMinimal is MISOAccessControls, SafeTransfer, ReentrancyGuar
      * @dev Attribution to the awesome delta.financial contracts
     */  
     function marketParticipationAgreement() public pure returns (string memory) {
-        return "I understand that I'm interacting with a smart contract. I understand that tokens committed are subject to the token issuer and local laws where applicable. I reviewed code of the smart contract and understand it fully. I agree to not hold developers or other people associated with the project liable for any losses or misunderstandings";
+        return "I understand that I'm interacting with a smart contract. I understand that tokens committed are subject to the token issuer and local laws where applicable. I reviewed code of the smart contract and understand it fully. I agree to not hold developers or other people associated with the project liable for any losses or misunderstandings. I have read and agree to the terms and conditions outlines during the sale.";
     }
     /** 
      * @dev Not using modifiers is a purposeful choice for code readability.
@@ -266,6 +266,7 @@ contract DutchAuctionMinimal is MISOAccessControls, SafeTransfer, ReentrancyGuar
         public payable
     {
         require(paymentCurrency == ETH_ADDRESS, "payment currency is not ETH address"); 
+        require(_beneficiary == msg.sender, "can only purchase for yourself");
         if(readAndAgreedToMarketParticipationAgreement == false) {
             revertBecauseUserDidNotProvideAgreement();
         }
